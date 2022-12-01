@@ -5,7 +5,6 @@ import "log"
 import "net/rpc"
 import "hash/fnv"
 
-
 //
 // Map functions return a slice of KeyValue.
 //
@@ -24,18 +23,81 @@ func ihash(key string) int {
 	return int(h.Sum32() & 0x7fffffff)
 }
 
-
 //
 // main/mrworker.go calls this function.
 //
+// 传入函数，实现传入mapf 函数和reducef函数
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
+	wg:=sync.WaitGroup{}
+	wg.Add(1)
+	go doWork(mapf,reducef,&wg)
+	go func() {
+		for{
+			time.Sleep(5*time.Second)
+			ret:=call("master.alive",&args,&reply)
+			if !ret {
+				return 
+			}
+		}
+		// 为什么这样写呢
+		wg.Done()
+	}()
+	wg.Wait()
+}
 
-	// Your worker implementation here.
+func doWork(mapf func(string, string) []KeyValue,
+reducef func(string, []string) string,wg *sync.WaitGroup){
+	defer wg.Done()
+	for {
+		// 像master申请任务
+		reply:= GetTask()
+		if !replyMsg.HoldTask() {
+			time.Sleep(time.Second)
+			continue
+		}
+		switch reply.Phase {
+			case MapPhase:
+				opaths,ok:=doMap(&reply,mapf)
+				if ok==true {
+					ret:=call("Master.Update",&RPCArgs{MapPhase,reply.MapTask.Id,opaths},&reply)
+					if ret{
+						// fmt.Println("map:%v success",reply.Id)
+					}else{
+						// fmt.Println("map:%v fail",reply.Id)
+					}
+				}else{
+					// fmt.Println("map:%v fail",reply.Id)
+				}
+			case ReducePhase:
+				opath,ok:=doReduce(&reply,mapf)
+				if ok==true {
+					ret:=call("Master.Update",&RPCArgs{MapPhase,reply.MapTask.Id,opath},&reply)
+					if ret{
+						// fmt.Println("reduce:%v success",reply.Id)
+					}else{
+						// fmt.Println("reduce:%v fail",reply.Id)
+					}
+				}else{
+					// fmt.Println("reduce:%v fail",reply.Id)
+				}
+			case TaskWait:
+				time.Sleep(time.Second)
+			case JobOver:
+				break
+		}
+	}
+}
 
-	// uncomment to send the Example RPC to the master.
-	// CallExample()
+// Id int	// 编号
+// Phase State	// 状态
+// OutPaths []Response // 输出路径
+func doMap(reply *RPCReply,mapf func(string, string) []KeyValue) {
 
+}
+
+func doMap(reply *RPCReply,reducef func(string, []string) string) string{
+	
 }
 
 //
@@ -45,20 +107,10 @@ func Worker(mapf func(string, string) []KeyValue,
 //
 func CallExample() {
 
-	// declare an argument structure.
-	args := ExampleArgs{}
-
-	// fill in the argument(s).
-	args.X = 99
-
-	// declare a reply structure.
-	reply := ExampleReply{}
-
+	args := RPCArgs{}
+	reply := RPCReply{}
 	// send the RPC request, wait for the reply.
-	call("Master.Example", &args, &reply)
-
-	// reply.Y should be 100.
-	fmt.Printf("reply.Y %v\n", reply.Y)
+	call("Master.rpc", &args, &reply)
 }
 
 //

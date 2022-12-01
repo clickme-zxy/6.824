@@ -10,11 +10,14 @@ package main
 // Please do not change this file.
 //
 
-import "../mr"
-import "plugin"
-import "os"
-import "fmt"
-import "log"
+import (
+	"fmt"
+	"log"
+	"os"
+	"plugin"
+
+	"../mr"
+)
 
 func main() {
 	if len(os.Args) != 2 {
@@ -24,6 +27,7 @@ func main() {
 
 	mapf, reducef := loadPlugin(os.Args[1])
 
+	// 给workder传入了mapf reducef这两个函数
 	mr.Worker(mapf, reducef)
 }
 

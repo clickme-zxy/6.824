@@ -6,15 +6,19 @@ package main
 // go run mrsequential.go wc.so pg*.txt
 //
 
-import "fmt"
-import "../mr"
-import "plugin"
-import "os"
-import "log"
-import "io/ioutil"
-import "sort"
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"plugin"
+	"sort"
+
+	"../mr"
+)
 
 // for sorting by key.
+// 存放的是一个数组
 type ByKey []mr.KeyValue
 
 // for sorting by key.
@@ -27,7 +31,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: mrsequential xxx.so inputfiles...\n")
 		os.Exit(1)
 	}
-
+	// 获取map_reduce的函数
 	mapf, reducef := loadPlugin(os.Args[1])
 
 	//
@@ -59,6 +63,7 @@ func main() {
 	sort.Sort(ByKey(intermediate))
 
 	oname := "mr-out-0"
+	// 创建文件
 	ofile, _ := os.Create(oname)
 
 	//
@@ -75,6 +80,7 @@ func main() {
 		for k := i; k < j; k++ {
 			values = append(values, intermediate[k].Value)
 		}
+		// 本质上是返回count(values的值)
 		output := reducef(intermediate[i].Key, values)
 
 		// this is the correct format for each line of Reduce output.
