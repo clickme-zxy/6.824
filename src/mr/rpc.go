@@ -9,13 +9,18 @@ package mr
 import "os"
 import "strconv"
 
-//
-// example to show how to declare the arguments
-// and reply for an RPC.
-//
+/*
+ 1. the master server
+ 2. worker server ask the master for the task
+ 3. the master first give the worker maptstask
+ 4. the worker finish the map task with the master listen 10s
+ 5. the worker ask the master for the new task and give the master the infomaton
+*/
 
+/*
+	send RPCArgs to the master
 
-// Add your RPC definitions here.
+*/
 type RPCArgs struct {
 	Id int	// 编号
 	Phase State	// 状态

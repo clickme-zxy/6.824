@@ -11,35 +11,43 @@ type State int
 
 const TimeLimit = 10 
 const (
+	// shuttle
 	TaskWait State = iota
+	// the job over
 	JobOver
+	// for the map task
 	MapPhase
+	// for the reduce task
 	ReducePhase
 )
 
 type MapTask struct {
-	Id int	// 编号
-	FilePath string  // 文件
+	Id int	// the id for the map task
+	FilePath string  // the filepath for the map task
 }
 
 type ReduceTask struct {
-	FilePaths []string //文件
-	Id int	//编号
+	Id int	// the id for the reduce task
+	FilePaths []string // the filepaths for the reduce task
 }
 
 type Master struct {
-	// Your definitions here.
+	// the state
 	Phase State
-
+	// the reduce task and the map task
 	NReduce int
 	NMap int
 
+	// this is for the listen of the task state
 	MapTaskState map[int]bool
 	ReduceTaskState map[int]bool
+	// this is for the task to give the worker
 	MapTaskQueue chan MapTask
 	ReduceTaskQueue chan ReduceTask
-	
-	MapOutPaths [][]response
+
+	// map response with the filepath
+	MapOutPaths [][]Response
+	// after shuttle it will become the reduceoutpath
 	ReduceOutPaths []string
 
 	Mut sync.Mutex
