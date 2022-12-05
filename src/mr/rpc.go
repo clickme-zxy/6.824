@@ -6,8 +6,10 @@ package mr
 // remember to capitalize all names.
 //
 
-import "os"
-import "strconv"
+import (
+	"os"
+	"strconv"
+)
 
 /*
  1. the master server
@@ -18,32 +20,37 @@ import "strconv"
 */
 
 /*
-	send RPCArgs to the master
-
+	the worker call the function,given the RPCArgs and ask for the RPCReply from the master
+	the worker will ask the master for the tak
 */
 type RPCArgs struct {
-	Id int	// 编号
-	Phase State	// 状态
+	Id       int        // 编号
+	Phase    State      // 状态
 	OutPaths []Response // 输出路径
 }
 
 /*
-	// 我的mapworker在完成任务之后，需要返回给master信息
-	// 这些信息包括 
-	// id 任务的名称
-	// state 任务的状态
-	// outputfiles 任务最后的输出文件在哪里
+	the master will response to the worker call with the info
 */
 type RPCReply struct {
-	Phase State	// 状态
-	HoldTask bool // 是否持有任务
-	Nreduce int 
-	MapTask MapTask
-	ReduceTask MapTask
+	Phase      State      // the phase of the overall job
+	HoldTask   bool       // if there any job need to given
+	Nreduce    int        // the number of the nreduce jobs
+	MapTask    MapTask    // the maptask
+	ReduceTask ReduceTask // the ReduceTask
 }
 
-type Response struct{
-	Id int // 编号
+/*
+	the response is for the reduce task
+		the id is the id of the reduce task
+		the outpath is the id of the filename
+	when a map task is over:
+		it will produce many response for the reduce task
+	and in the shuttle we will reoriginize the infor of the reduce task
+*/
+
+type Response struct {
+	Id      int    // 编号
 	OutPath string //输出的路径
 }
 
