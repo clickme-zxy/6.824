@@ -16,10 +16,12 @@ type PutAppendArgs struct {
 	// You'll have to add definitions here.
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
+	Cid    int64
+	SeqNum int
 }
 
 type PutAppendReply struct {
-	Err Err
+	WrongLeader bool
 }
 
 type GetArgs struct {
@@ -28,6 +30,6 @@ type GetArgs struct {
 }
 
 type GetReply struct {
-	Err   Err
-	Value string
+	WrongLeader bool
+	Value       string
 }
