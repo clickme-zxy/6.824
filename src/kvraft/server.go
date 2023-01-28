@@ -126,6 +126,7 @@ func (kv *KVServer) doSnapShot(index int) {
 	kv.mu.Unlock()
 	kv.rf.DoSnapShot(index, w.Bytes())
 }
+
 func send(notifyCh chan Op, op Op) {
 	select {
 	case <-notifyCh:
